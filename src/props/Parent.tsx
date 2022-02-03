@@ -1,8 +1,12 @@
 import React from 'react';
-import { Child } from './Child';
+import { ChildAsFC } from './Child';
 
 const Parent = () => {
-  return <Child />;
+  return (
+    <ChildAsFC color='blue' onClick={()=> console.log('clicked')}>
+      <p> I'm a 'chilren' of child</p> 
+    </ChildAsFC>
+    );
 };
 
 export default Parent;
