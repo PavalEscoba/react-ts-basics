@@ -202,3 +202,93 @@ class UserSearch extends Component<UserSearchProps> {
     )
   }
 ```
+
+## Section 4: Typescript with Redux ##
+### Links to NPM SEARCH API ###
+- [Old one](https://registry.npmjs.org/-/v1/search?text=react)
+- [New one](https://api.npms.io/v2/search?q=react)  
+  
+We need to know what our state will be. 
+Here we have 3 fields from 1 main:  
+`repositories: 1 - data, 2 - loading, 3 - error.`
+So reducer may look like this:
+```
+interFace RepositoriesState {
+  loading: boolean;
+  error: string | null;
+  data: strings[] //just for now
+}
+
+const reducer = (state:RepositoriesState, action: any) => {
+  switch (action.type) {
+    case 'SEARCH_REPOSITORIES':
+      return {loading: true, error: null, data: []}
+    case 'SEARCH_REPOSITORIES_SUCCESS':
+      return {loading: false, error: null, data: action.payload}
+    case 'SEARCH_REPOSITORIES_ERROR':
+      return {loading: false, error: action.payload, data: []}
+    default: 
+      return state;
+  }
+}
+```
+
+Зараз мы можам зрабіць так, каб ТС правяраў тое, што вяртаецца з рэдзьюсэра. Тым самым мы забяспечым бяспеку для `data`.
+```
+const reducer = (state:RepositariesState, action: any):RepositariesState{...}
+```
+Трэба таксама правяраць і Экшн. Спачатку проста праверым тайп, а ўдасканалім пэйлоад пасля.
+```
+interface Action {
+  type: string;
+  payload?: any
+}
+```
+У нас ёсць 3 віды экшэнаў і таму для кожнага мы прапішам свой інтэрфейс. 
+
+```
+interface SearchRepositoriesAction {
+  type: 'SEARCH_REPOSITORIES';
+}
+
+interface SearchRepositoryActionSuccess {
+  type: 'SEARCH_REPOSITORIES_SUCCESS';
+  payload: string[];
+}
+
+interface SearchRepositoriesError {
+  type: 'SEARCH_REPOSITORIES_ERROR';
+  payload: string;
+}
+```
+І перадаючы ў рэдзьюсэр мы прапісваем праз пайп усе магчымыя тыпы экшенаў.  
+```
+const reducer = (state:RepositoriesState, action: 
+  SearchRepositories 
+  | SearchRepositoriesSuccess 
+  | SearchRepositoriesError
+): RepositariesState {...}
+```
+
+Аб'яднаем усе экшэны ў адзін `Action`
+```
+type Action =  SearchRepositories 
+  | SearchRepositoriesSuccess 
+  | SearchRepositoriesError
+```
+Такім чынам `action:Action`  
+Таксама вынясем усе гэтыя радкі з тыпамі экшэнаў у `enum` і перавядзем тыя радкі ў спасылку на enum.
+```
+enum ActionType {
+  SEARCH_REPOSITORIES = 'SEARCH_REPOSOTORIES',
+  SEARCH_REPOSITORIES_SUCCESS = 'SEARCH_REPOSOTORIES_SUCCESS',
+  SEARCH_REPOSITORIES_ERROR = 'SEARCH_REPOSOTORIES_ERROR',
+}
+```
+Уладкуем нашую структуру тэчак лепшым чынам:
+- усе interface вынясем у `actions=>index.ts`. Экспартуем `type Action`;
+- вынясем `enum` у `action-types=>index.ts` і экспартуем яго ж.
+- Імпартуем `Action` і `ActionType` у redux.ts
+
+Зробім тэчку з экшн-кріэйтарамі `action-creators => index.ts`;
+
