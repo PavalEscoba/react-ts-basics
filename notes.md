@@ -203,15 +203,18 @@ class UserSearch extends Component<UserSearchProps> {
   }
 ```
 
-## Section 4: Typescript with Redux ##
-### Links to NPM SEARCH API ###
+## Section 4: Typescript with Redux
+
+### Links to NPM SEARCH API
+
 - [Old one](https://registry.npmjs.org/-/v1/search?text=react)
-- [New one](https://api.npms.io/v2/search?q=react)  
-  
-We need to know what our state will be. 
+- [New one](https://api.npms.io/v2/search?q=react)
+
+We need to know what our state will be.
 Here we have 3 fields from 1 main:  
 `repositories: 1 - data, 2 - loading, 3 - error.`
 So reducer may look like this:
+
 ```
 interFace RepositoriesState {
   loading: boolean;
@@ -227,24 +230,28 @@ const reducer = (state:RepositoriesState, action: any) => {
       return {loading: false, error: null, data: action.payload}
     case 'SEARCH_REPOSITORIES_ERROR':
       return {loading: false, error: action.payload, data: []}
-    default: 
+    default:
       return state;
   }
 }
 ```
 
 Зараз мы можам зрабіць так, каб ТС правяраў тое, што вяртаецца з рэдзьюсэра. Тым самым мы забяспечым бяспеку для `data`.
+
 ```
 const reducer = (state:RepositariesState, action: any):RepositariesState{...}
 ```
+
 Трэба таксама правяраць і Экшн. Спачатку проста праверым тайп, а ўдасканалім пэйлоад пасля.
+
 ```
 interface Action {
   type: string;
   payload?: any
 }
 ```
-У нас ёсць 3 віды экшэнаў і таму для кожнага мы прапішам свой інтэрфейс. 
+
+У нас ёсць 3 віды экшэнаў і таму для кожнага мы прапішам свой інтэрфейс.
 
 ```
 interface SearchRepositoriesAction {
@@ -261,23 +268,28 @@ interface SearchRepositoriesError {
   payload: string;
 }
 ```
-І перадаючы ў рэдзьюсэр мы прапісваем праз пайп усе магчымыя тыпы экшенаў.  
+
+І перадаючы ў рэдзьюсэр мы прапісваем праз пайп усе магчымыя тыпы экшенаў.
+
 ```
-const reducer = (state:RepositoriesState, action: 
-  SearchRepositories 
-  | SearchRepositoriesSuccess 
+const reducer = (state:RepositoriesState, action:
+  SearchRepositories
+  | SearchRepositoriesSuccess
   | SearchRepositoriesError
 ): RepositariesState {...}
 ```
 
 Аб'яднаем усе экшэны ў адзін `Action`
+
 ```
-type Action =  SearchRepositories 
-  | SearchRepositoriesSuccess 
+type Action =  SearchRepositories
+  | SearchRepositoriesSuccess
   | SearchRepositoriesError
 ```
+
 Такім чынам `action:Action`  
 Таксама вынясем усе гэтыя радкі з тыпамі экшэнаў у `enum` і перавядзем тыя радкі ў спасылку на enum.
+
 ```
 enum ActionType {
   SEARCH_REPOSITORIES = 'SEARCH_REPOSOTORIES',
@@ -285,10 +297,41 @@ enum ActionType {
   SEARCH_REPOSITORIES_ERROR = 'SEARCH_REPOSOTORIES_ERROR',
 }
 ```
+
 Уладкуем нашую структуру тэчак лепшым чынам:
+
 - усе interface вынясем у `actions=>index.ts`. Экспартуем `type Action`;
 - вынясем `enum` у `action-types=>index.ts` і экспартуем яго ж.
 - Імпартуем `Action` і `ActionType` у redux.ts
 
-Зробім тэчку з экшн-кріэйтарамі `action-creators => index.ts`;
+Зробім тэчку з экшн-кріэйтарамі `action-creators => index.ts`;  
+Там імпартуем  
+`axios`,  
+`Action from ../actions`,  
+`ActionType from ../action-type`.
 
+Далей пішам функцыю стварэння экшана `searchRepository`, дзе спачатку дыспатчым проста запыт, а пасля выкарыстоўваем `try/catch`. У `catch` бярэм `error` і дыспатчым экшн з `error`:
+
+```
+const searchRepositories = (term: string) => {
+  return async (dispatch: any) => {
+    dispatch({type: ActionType.SEARCH_REPOSITORIES});
+
+    try {
+      const { data } = await axios.get('https://registry.npmjs.org/-/v1/search', {
+        params: {
+          text: term
+        }
+      });
+      const names = data.objects.map((result:any) => {
+        return result.package.name;
+      });
+
+      dispatch({type: ActionType.SEARCH_REPOSITORIES_SUCCESS, payload: names})
+    }
+    catch(err: any) {
+      dispatch({type: ActionType.SEARCH_REPOSITORIES_ERROR, payload: err.message})
+    }
+  }
+}
+```
