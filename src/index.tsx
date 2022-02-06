@@ -6,6 +6,7 @@ import UserSearch from './state/UserSearch';
 import UserSearchClass from './classes/UserSearchClass';
 import UserSearchRef from './refs/UserSearchRef';
 import EventComponent from './events/EventComponent';
+import PackageSearch from './redux/Redux';
 
 const App = () => {
   const users = [
@@ -23,7 +24,8 @@ const App = () => {
       {/* <UserSearch /> */}
       {/* <EventComponent /> */}
       {/* <UserSearchClass users={users} /> */}
-      <UserSearchRef />
+      {/* <UserSearchRef /> */}
+      <PackageSearch />
     </div>
   );
 };
